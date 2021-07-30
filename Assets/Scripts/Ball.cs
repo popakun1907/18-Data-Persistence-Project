@@ -7,15 +7,24 @@ public class Ball : MonoBehaviour
 {
     private Rigidbody m_Rigidbody;
 
+    private GameManager gameManager;
+
+    private float ballSpeed;
+
     void Start()
     {
+        gameManager = GameManager.Instance;
+        ballSpeed = gameManager.BallSpeed;
+
         m_Rigidbody = GetComponent<Rigidbody>();
     }
     
     private void OnCollisionExit(Collision other)
     {
         var velocity = m_Rigidbody.velocity;
-        
+
+        Debug.Log(velocity);
+
         //after a collision we accelerate a bit
         velocity += velocity.normalized * 0.01f;
         
@@ -26,9 +35,9 @@ public class Ball : MonoBehaviour
         }
 
         //max velocity
-        if (velocity.magnitude > 3.0f)
+        if (velocity.magnitude > ballSpeed)
         {
-            velocity = velocity.normalized * 3.0f;
+            velocity = velocity.normalized * ballSpeed;
         }
 
         m_Rigidbody.velocity = velocity;

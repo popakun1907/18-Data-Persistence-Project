@@ -9,7 +9,7 @@ public class MainManager : MonoBehaviour
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
-
+    
     public Text ScoreText;
     public GameObject GameOverText;
     
@@ -18,10 +18,18 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
+    GameManager gameManager;
+
+    private float ballSpeed;
+
     
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = GameManager.Instance;
+        ballSpeed = gameManager.BallSpeed;
+        AddPoint(0);
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -50,7 +58,7 @@ public class MainManager : MonoBehaviour
                 forceDir.Normalize();
 
                 Ball.transform.SetParent(null);
-                Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
+                Ball.AddForce(forceDir * ballSpeed, ForceMode.VelocityChange);
             }
         }
         else if (m_GameOver)
@@ -60,12 +68,17 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            MenuManager.ReturnToMenu();
+        }
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"Score : {gameManager.PlayerName} : {m_Points}";
     }
 
     public void GameOver()
