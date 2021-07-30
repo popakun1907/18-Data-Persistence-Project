@@ -26,15 +26,12 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             LoadPlayer();
             LoadSettings();
-            InitScoreTable();
+            LoadScoreTable();
         }
         else
         {
             Destroy(gameObject);
         }
-
-        
-
     }
 
     // Update is called once per frame
@@ -101,28 +98,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //public void UpdateScoreTable()
-    //{
-    //    LinkedListNode<(string name, int score)> pointer = scoreTable.First;
-
-    //    while (pointer != null)
-    //    {
-    //        if (CurrentScore > pointer.Value.score)
-    //        {
-    //            scoreTable.AddBefore(pointer, (PlayerName, CurrentScore));
-    //            scoreTable.RemoveLast();
-    //        }
-    //        else if ((CurrentScore == pointer.Value.score))
-    //        {
-    //            scoreTable.AddAfter(pointer, (PlayerName, CurrentScore));
-    //            scoreTable.RemoveLast();
-    //        }
-
-    //        pointer = pointer.Next;
-    //    }
-    //}
-
-    public void InitScoreTable()
+    private void InitScoreTable()
     {
         scoreTable = new ScoreEntry[10];
 
@@ -133,9 +109,49 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void UpdateScoreTable()
+    {
+        if (CurrentScore <= scoreTable[9].score)
+        {
+            return;
+        }
+
+        bool isChecking = true;
+        ScoreEntry currentEntry = default(ScoreEntry);
+        ScoreEntry nextEntry;
+        for (int i = 0; i < scoreTable.Length; i++)
+        {
+            if (isChecking)
+            {
+                if (CurrentScore > scoreTable[i].score)
+                {
+                    isChecking = false;
+
+                    currentEntry = scoreTable[i];
+
+                    scoreTable[i] = new ScoreEntry() { name = PlayerName, score = CurrentScore };
+                }
+                else if (CurrentScore == scoreTable[i].score)
+                {
+                    isChecking = false;
+
+                    currentEntry = new ScoreEntry() { name = PlayerName, score = CurrentScore };
+                }
+            }
+            else
+            {
+                nextEntry = scoreTable[i];
+                scoreTable[i] = currentEntry;
+                currentEntry = nextEntry;
+            }
+        }
+
+        SaveScoreTable();
+    }
+
     public void SaveScoreTable()
     {
-        ScoreTableData data = new ScoreTableData();
+        ScoreTableData data = new ScoreTableData(10);
 
         for (int i = 0; i < 10; i++)
         {
@@ -146,10 +162,24 @@ public class GameManager : MonoBehaviour
         SaveToFile(data, PATH_SCORETABLE);
     }
 
-    //public void LoadScoreTable()
-    //{
+    public void LoadScoreTable()
+    {
+        InitScoreTable();
 
-    //}
+        try
+        {
+            ScoreTableData data = LoadFromFile<ScoreTableData>(PATH_SCORETABLE);
+            for (int i = 0; i < 10; i++)
+            {
+                scoreTable[i].name = data.names[i];
+                scoreTable[i].score = data.scores[i];
+            }
+        }
+        catch(ArgumentException error)
+        {
+            Debug.Log(error.Message);
+        }
+    }
 
     private void SaveToFile(object data, string PATH)
     {
@@ -191,6 +221,12 @@ public class GameManager : MonoBehaviour
     {
         public string[] names;
         public int[] scores;
+
+        public ScoreTableData(int length)
+        {
+            names = new string[length];
+            scores = new int[length];
+        }
     }
 
     public struct ScoreEntry

@@ -23,8 +23,6 @@ public class Ball : MonoBehaviour
     {
         var velocity = m_Rigidbody.velocity;
 
-        Debug.Log(velocity);
-
         //after a collision we accelerate a bit
         velocity += velocity.normalized * 0.01f;
         
